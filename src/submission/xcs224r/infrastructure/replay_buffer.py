@@ -129,6 +129,22 @@ class ReplayBuffer():
         ## Note that rews, next_obs, and terminals are not used for BC
 
         # *** START CODE HERE ***
+        # total number of transitions currently in the buffer
+        num_entries = self.obs.shape[0]
+
+        # generate random indices
+        # use np.random.permutation to get unique random indices (sampling without replacement)
+        # or np.random.randint for sampling with replacement based omn Hint 1
+        indices = np.random.permutation(num_entries)[:batch_size]
+
+        # Select the data corresponding to those indices as suggested by the hints
+        obs = self.obs[indices]
+        acs = self.acs[indices]
+        rews = self.rews[indices]
+        next_obs = self.next_obs[indices]
+        terminals = self.terminals[indices]
+
+        return obs, acs, rews, next_obs, terminals
         # *** END CODE HERE ***
 
     def sample_recent_data(self, batch_size=1):

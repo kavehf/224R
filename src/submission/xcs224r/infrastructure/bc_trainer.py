@@ -205,11 +205,25 @@ class BCTrainer:
         # HINT3: To collect data, you might want to use pre-existing sample_trajectories code from utils
         # HINT4: You want each of these collected rollouts to be of length self.params['ep_len']
 
-        paths, envsteps_this_batch = None, None
-
         print("\nCollecting data to be used for training...")
 
         # *** START CODE HERE ***
+        if itr == 0 and load_initial_expertdata:
+            # We load initial expert data from a pickle file as suggested in the assignment description.
+            with open(load_initial_expertdata, 'rb') as f:
+                paths = pickle.load(f)
+            # Calculate total environment steps in the loaded data
+            envsteps_this_batch = sum([len(path['observation']) for path in paths])
+        else:
+            # Collect data using the current policy (DAgger/RL iteration)
+            # We use the batch size specified in params
+            paths, envsteps_this_batch = utils.sample_trajectories(
+                self.env,
+                collect_policy,
+                self.params['batch_size'],
+                self.params['ep_len']
+            )
+
         # *** END CODE HERE ***
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
@@ -234,18 +248,26 @@ class BCTrainer:
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
 
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = None, None, None, None, None
-
             # *** START CODE HERE ***
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(
+                self.params['train_batch_size']
+            )
             # *** END CODE HERE ***
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
 
-            train_log = None
-
             # *** START CODE HERE ***
+            train_log = self.agent.train(
+                ob_batch,
+                ac_batch,
+                re_batch,
+                next_ob_batch,
+                terminal_batch
+            )
+
+            all_logs.append(train_log)
             # *** END CODE HERE ***
         return all_logs
 

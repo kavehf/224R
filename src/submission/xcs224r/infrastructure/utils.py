@@ -26,9 +26,10 @@ def sample_trajectory(env, policy, max_path_length, render=False):
     """
     # Initialize environment for the beginning of a new rollout
 
-    ob, info = None, None  # HINT: should be the output of resetting the env
+    #ob, info = None, None  # HINT: should be the output of resetting the env
 
     # *** START CODE HERE ***
+    ob, info = env.reset()
     # *** END CODE HERE ***
 
     # Initialize data storage for across the trajectory
@@ -49,14 +50,15 @@ def sample_trajectory(env, policy, max_path_length, render=False):
 
         # Use the most recent observation to decide what to do
         obs.append(ob)
-        ac = None # HINT: Query the policy's get_action functio
+        ac = None # HINT: Query the policy's get_action function
         # *** START CODE HERE ***
+        ac = policy.get_action(ob)
         # *** END CODE HERE ***
         ac = ac[0]
         acs.append(ac)
 
         # Take that action and record results
-        ob, rew, done, _, _ = env.step(ac)
+        ob, rew, done, truncated, _ = env.step(ac)
 
         # Record result of taking that action
         steps += 1
@@ -68,6 +70,8 @@ def sample_trajectory(env, policy, max_path_length, render=False):
 
         rollout_done =  None # HINT: this is either 0 or 1
         # *** START CODE HERE ***
+        stop_cond = done or truncated or steps >= max_path_length
+        rollout_done = 1 if stop_cond else 0
         # *** END CODE HERE ***
         
         terminals.append(rollout_done)
@@ -88,10 +92,12 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
     timesteps_this_batch = 0
     paths = []
     while timesteps_this_batch < min_timesteps_per_batch:
-
-        pass
-
         # *** START CODE HERE ***
+        path = sample_trajectory(env, policy, max_path_length, render)
+        paths.append(path)
+
+        # Count the number of steps in this rollout and add in to the total timesteps
+        timesteps_this_batch += get_pathlength(path)
         # *** END CODE HERE ***
 
     return paths, timesteps_this_batch
@@ -106,6 +112,10 @@ def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False):
     paths = []
 
     # *** START CODE HERE ***
+    for _ in range(ntraj):
+        # Collect exactly one trajectory per loop iteration
+        path = sample_trajectory(env, policy, max_path_length, render)
+        paths.append(path)
     # *** END CODE HERE ***
 
 ############################################

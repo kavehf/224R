@@ -83,6 +83,28 @@ def build_mlp(
     mlp = None
 
     # *** START CODE HERE ***
+    modules = []
+
+    if n_layers > 1:
+        # 1. Input layer: from input_size to hidden 'size'
+        modules.append(nn.Linear(input_size, size))
+        modules.append(activation)
+
+        # 2. Hidden layers: n_layers minus two intermediate hidden layers
+        for _ in range(n_layers - 2):
+            modules.append(nn.Linear(size, size))
+            modules.append(activation)
+
+        # 3. Output layer: from hidden 'size' to output_size
+        modules.append(nn.Linear(size, output_size))
+        modules.append(output_activation)
+    else:
+        # Handle n_layers = 1 separately by linearly mapping from input to output
+        modules.append(nn.Linear(input_size, output_size))
+        modules.append(output_activation)
+
+    # Wrap the list of modules into a Sequential container
+    mlp = nn.Sequential(*modules)
     # *** END CODE HERE ***
 
     return mlp
